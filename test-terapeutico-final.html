@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Que corriente terapeutica es para ti</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf8f4;--paper:#fff;--ink:#1a1714;--muted:#7c7570;--border:#e2ddd6;--accent:#7c5c3e;--gold:#b89060;--dim:#c4bdb5}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+.wrap{max-width:680px;margin:0 auto;padding:0 1.5rem 6rem}
+.hd{padding:4.5rem 0 3rem;border-bottom:1px solid var(--border);margin-bottom:2.5rem}
+.kicker{font-size:.68rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem}
+h1{font-family:"EB Garamond",serif;font-size:clamp(2.8rem,6vw,4.4rem);font-weight:400;line-height:1.08;margin-bottom:1.4rem}
+h1 em{font-style:italic;color:var(--accent)}
+.lede{font-size:.93rem;font-weight:300;color:var(--muted);line-height:1.8;max-width:460px}
+.prog{display:flex;align-items:center;gap:1.1rem;margin-bottom:1.75rem}
+.prog-rail{flex:1;height:1px;background:var(--border);position:relative;overflow:hidden}
+.prog-bar{position:absolute;inset:0 auto 0 0;background:var(--accent);width:0;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.prog-ct{font-size:.72rem;font-weight:500;letter-spacing:.1em;color:var(--dim);white-space:nowrap}
+.card{border:1px solid var(--border);border-radius:2px;overflow:hidden;background:var(--paper);box-shadow:0 1px 32px rgba(26,23,20,.06);animation:emerge .4s cubic-bezier(.4,0,.2,1) both}
+@keyframes emerge{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.card-q{padding:2rem 2.25rem 1.75rem;border-bottom:1px solid var(--border)}
+.q-no{font-size:.67rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.9rem}
+.q-stem{font-family:"EB Garamond",serif;font-size:1.38rem;font-weight:400;line-height:1.45}
+.opt{display:flex;align-items:stretch;width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);cursor:pointer;font-family:"DM Sans",sans-serif;font-size:.9rem;font-weight:300;color:var(--ink);line-height:1.65;text-align:left;transition:background .16s;position:relative}
+.opt:last-child{border-bottom:none}
+.opt:hover{background:rgba(124,92,62,.04)}
+.opt.sel{background:rgba(124,92,62,.06)}
+.opt::after{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:transparent;transition:background .2s}
+.opt.sel::after{background:var(--accent)}
+.gl{width:3.2rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:"EB Garamond",serif;font-style:italic;font-size:1.05rem;color:var(--dim);border-right:1px solid var(--border);padding:1.1rem 0;transition:color .2s}
+.opt.sel .gl{color:var(--accent)}
+.ot{padding:1.1rem 1.4rem;flex:1}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem}
+.btn{font-family:"DM Sans",sans-serif;font-size:.83rem;font-weight:500;letter-spacing:.05em;border-radius:2px;padding:.7rem 1.6rem;cursor:pointer;transition:all .18s}
+.bg{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.bg:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.bp{background:var(--ink);border:1px solid var(--ink);color:var(--bg)}
+.bp:hover:not(:disabled){background:var(--accent);border-color:var(--accent)}
+.btn:disabled{opacity:.2;cursor:not-allowed}
+#res{display:none}
+#res.on{display:block;animation:emerge .5s ease both}
+.res-hd{padding:3.5rem 0 2rem;border-bottom:1px solid var(--border);margin-bottom:2rem}
+.res-sub{font-size:.68rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem}
+.res-title{font-family:"EB Garamond",serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:400;line-height:1.12;margin-bottom:1rem}
+.badge{display:inline-block;font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;padding:.32rem .9rem;border-radius:1px}
+.panel{border:1px solid var(--border);border-radius:2px;background:var(--paper);padding:1.75rem 2rem;margin-bottom:1rem;box-shadow:0 1px 16px rgba(26,23,20,.05)}
+.plabel{font-size:.67rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:1.4rem}
+.br{margin-bottom:1.1rem}.br:last-child{margin-bottom:0}
+.br-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.4rem}
+.br-nm{font-size:.82rem;font-weight:500}
+.br-st{font-size:.72rem;color:var(--muted);font-weight:300}
+.br-tr{height:2px;background:var(--border);border-radius:99px;overflow:hidden}
+.br-fl{height:100%;border-radius:99px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.dpanel{border:1px solid var(--border);border-radius:2px;background:var(--paper);overflow:hidden;margin-bottom:1rem;box-shadow:0 1px 16px rgba(26,23,20,.05)}
+.dstripe{height:3px}
+.dbody{padding:2rem 2.25rem 2.25rem}
+.dbody .plabel{margin-bottom:.75rem}
+.dbody h2{font-family:"EB Garamond",serif;font-size:1.65rem;font-weight:400;line-height:1.2;margin-bottom:1.4rem}
+.pq{font-family:"EB Garamond",serif;font-style:italic;font-size:1.08rem;line-height:1.6;color:var(--accent);border-left:2px solid var(--gold);padding:.85rem 1.1rem;background:rgba(184,144,96,.05);margin-bottom:1.5rem}
+.dbody p{font-size:.93rem;font-weight:300;color:var(--muted);line-height:1.85;margin-bottom:.95rem}
+.dbody p:last-child{margin-bottom:0}
+.dbody p strong{color:var(--ink);font-weight:500}
+.restart{display:block;width:100%;padding:1rem;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:2px;font-family:"DM Sans",sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.restart:hover{border-color:var(--accent);color:var(--accent)}
+@media(max-width:560px){.card-q{padding:1.5rem 1.25rem}.ot{padding:1rem}.panel,.dbody{padding:1.25rem}}
+/* Profile form */
+.pf{border:1px solid var(--border);border-radius:2px;background:var(--paper);padding:2rem 2.25rem;margin-bottom:2rem;box-shadow:0 1px 32px rgba(26,23,20,.06)}
+.pf-title{font-family:"EB Garamond",serif;font-size:1.1rem;font-weight:400;color:var(--ink);margin-bottom:.4rem}
+.pf-sub{font-size:.82rem;font-weight:300;color:var(--muted);margin-bottom:1.75rem;line-height:1.6}
+.pf-group{margin-bottom:1.5rem}
+.pf-group:last-child{margin-bottom:0}
+.pf-label{font-size:.7rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:.65rem;display:block}
+.pf-opts{display:flex;flex-wrap:wrap;gap:.5rem}
+.pf-opt{font-family:"DM Sans",sans-serif;font-size:.85rem;font-weight:400;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:2px;padding:.45rem 1rem;cursor:pointer;transition:all .16s}
+.pf-opt:hover{border-color:var(--accent);color:var(--ink)}
+.pf-opt.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.pf-geo{display:none;margin-top:.6rem}
+.pf-geo.show{display:block}
+.pf-select{width:100%;font-family:"DM Sans",sans-serif;font-size:.88rem;font-weight:300;color:var(--ink);background:var(--paper);border:1px solid var(--border);border-radius:2px;padding:.6rem .9rem;appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;transition:border-color .16s}
+.pf-select:focus{border-color:var(--accent)}
+.pf-start{display:block;width:100%;margin-top:1.75rem;padding:.85rem;background:var(--ink);border:1px solid var(--ink);color:var(--bg);border-radius:2px;font-family:"DM Sans",sans-serif;font-size:.85rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.pf-start:hover{background:var(--accent);border-color:var(--accent)}
+/* Profile chip in results */
+.pf-result{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+.pf-chip{font-size:.72rem;font-weight:500;letter-spacing:.08em;padding:.28rem .75rem;border:1px solid var(--border);border-radius:1px;color:var(--muted);background:var(--bg)}
+
+/* Profile screen */
+.pf-screen{display:none}
+.pf-screen.on{display:block;animation:emerge .45s cubic-bezier(.4,0,.2,1) both}
+.pf-hd{padding:2.5rem 0 2rem;border-bottom:1px solid var(--border);margin-bottom:2rem}
+.pf-hd h2{font-family:"EB Garamond",serif;font-size:clamp(1.9rem,4.5vw,3rem);font-weight:400;line-height:1.12;margin-bottom:0}
+.pf-hd h2 em{font-style:italic;color:var(--accent)}
+.pf-card{border:1px solid var(--border);border-radius:2px;background:var(--paper);padding:2rem 2.25rem;margin-bottom:1.25rem;box-shadow:0 1px 32px rgba(26,23,20,.06)}
+.pf-note{font-size:.83rem;font-weight:300;color:var(--muted);line-height:1.7;margin-bottom:1.75rem;padding-left:1rem;border-left:2px solid var(--border)}
+.pf-group{margin-bottom:1.6rem}.pf-group:last-child{margin-bottom:0}
+.pf-label{font-size:.67rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.7rem;display:block}
+.pf-opts{display:flex;flex-wrap:wrap;gap:.45rem}
+.pf-opt{font-family:"DM Sans",sans-serif;font-size:.85rem;font-weight:400;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:2px;padding:.45rem 1rem;cursor:pointer;transition:all .16s;line-height:1}
+.pf-opt:hover{border-color:var(--accent);color:var(--ink)}
+.pf-opt.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.pf-geo{display:none;margin-top:.8rem}.pf-geo.show{display:block}
+.pf-select{width:100%;font-family:"DM Sans",sans-serif;font-size:.88rem;font-weight:300;color:var(--ink);background:var(--paper);border:1px solid var(--border);border-radius:2px;padding:.6rem .9rem;appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;transition:border-color .16s}
+.pf-select:focus{border-color:var(--accent)}
+.pf-continue{display:block;width:100%;margin-top:1.75rem;padding:.9rem;background:var(--ink);border:1px solid var(--ink);color:var(--bg);border-radius:2px;font-family:"DM Sans",sans-serif;font-size:.85rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.pf-continue:hover{background:var(--accent);border-color:var(--accent)}
+
+
+/* Profile summary note */
+.pf-summary{margin-bottom:1rem}
+.pf-summary-note{font-size:.88rem;font-weight:300;color:var(--muted);line-height:1.7;padding:.9rem 1.1rem;border:1px solid var(--border);border-radius:2px;background:var(--paper)}
+.pf-summary-note strong{color:var(--ink);font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hd">
+  <p class="kicker">Orientación terapéutica</p>
+  <h1>¿Qué tipo de<br>terapia es<br><em>para ti?</em></h1>
+  <p class="lede">No hay respuestas correctas ni incorrectas. Elige lo que genuinamente te representa — lo que sientes, no lo que crees que deberías sentir.</p>
+</header>
+<div id="quiz">
+  <div class="prog">
+    <div class="prog-rail"><div class="prog-bar" id="pb"></div></div>
+    <span class="prog-ct" id="pct">1 / 20</span>
+  </div>
+  <div class="card" id="qc"></div>
+  <div class="nav">
+    <button class="btn bg" id="bPrev" onclick="go(-1)">← Anterior</button>
+    <button class="btn bp" id="bNext" onclick="go(1)" disabled>Siguiente &#8594;</button>
+  </div>
+</div><!-- end quiz -->
+
+<div class="pf-screen" id="pfScreen">
+  <div class="pf-hd">
+    <p class="kicker">Casi listo</p>
+    <h2>Cuentaños sobre el<br>terapeuta que<br><em>estas buscando</em></h2>
+  </div>
+  <div class="pf-card">
+    <p class="pf-note">Esta información no cambia tu resultado.</p>
+    <div class="pf-group">
+      <span class="pf-label">Género del terapeuta que buscas</span>
+      <div class="pf-opts">
+        <button class="pf-opt" onclick="setPF(this,'tGenero','Mujer')">Mujer</button>
+        <button class="pf-opt" onclick="setPF(this,'tGenero','Hombre')">Hombre</button>
+        <button class="pf-opt" onclick="setPF(this,'tGenero','Sin preferencia')">Sin preferencia</button>
+      </div>
+    </div>
+    <div class="pf-group">
+      <span class="pf-label">Rango de edad del terapeuta que buscas</span>
+      <div class="pf-opts">
+        <button class="pf-opt" onclick="setPF(this,'tEdad','20-30')">20-30</button>
+        <button class="pf-opt" onclick="setPF(this,'tEdad','30-40')">30-40</button>
+        <button class="pf-opt" onclick="setPF(this,'tEdad','40-50')">40-50</button>
+        <button class="pf-opt" onclick="setPF(this,'tEdad','50-60')">50-60</button>
+        <button class="pf-opt" onclick="setPF(this,'tEdad','60+')">60+</button>
+        <button class="pf-opt" onclick="setPF(this,'tEdad','Sin preferencia')">Sin preferencia</button>
+      </div>
+    </div>
+    <div class="pf-group">
+      <span class="pf-label">Modalidad en que buscas al terapeuta</span>
+      <div class="pf-opts">
+        <button class="pf-opt" onclick="setPF(this,'modalidad','En línea');toggleGeo(false)">En línea</button>
+        <button class="pf-opt" onclick="setPF(this,'modalidad','Presencial');toggleGeo(true)">Presencial</button>
+        <button class="pf-opt" onclick="setPF(this,'modalidad','Indistinto');toggleGeo(true)">Me es indistinto</button>
+      </div>
+      <div class="pf-geo" id="geoWrap">
+        <span class="pf-label" style="margin-top:.9rem;margin-bottom:.5rem">Zona donde buscas al terapeuta</span>
+        <select class="pf-select" id="geoZona" onchange="onZonaChange(this.value)">
+          <option value="">Selecciona una zona</option>
+          <option value="Centro">CDMX — Centro</option>
+          <option value="Sur">CDMX — Sur</option>
+          <option value="Poniente">CDMX — Poniente</option>
+          <option value="Norte">CDMX — Norte</option>
+          <option value="Oriente">CDMX — Oriente</option>
+          <option value="EDOMEX Norte">Área Metro — Norte (Naucalpan, Tlalnepantla, Atizapán)</option>
+          <option value="EDOMEX Oriente">Área Metro — Oriente (Ecatepec, Neza, Chimalhuacán)</option>
+          <option value="Toluca">Toluca</option>
+          <option value="Guadalajara">Guadalajara / Jalisco</option>
+          <option value="Monterrey">Monterrey / Nuevo León</option>
+          <option value="Puebla">Puebla</option>
+          <option value="Queretaro">Querétaro</option>
+          <option value="Otra">Otra ciudad</option>
+        </select>
+        <div id="coloniaWrap" style="display:none;margin-top:.6rem">
+          <span class="pf-label" style="margin-top:.6rem;margin-bottom:.5rem">Colonia o alcaldía</span>
+          <select class="pf-select" id="geoColonia" onchange="PF.zona=document.getElementById('geoZona').value+' — '+this.value">
+            <option value="">Selecciona colonia o alcaldía</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <button class="pf-continue" onclick="showResults()">Ver mi resultado →</button>
+  </div>
+</div>
+<div id="res">
+  <div class="res-hd">
+    <p class="res-sub">Tu resultado</p>
+    <p class="res-title" id="rTitle"></p>
+    <div class="badge" id="rBadge"></div>
+    <div class="pf-result" id="pfChips"></div>
+  </div>
+  <div class="panel">
+    <p class="plabel">Distribución de respuestas</p>
+    <div id="bars"></div>
+  </div>
+  <div class="dpanel">
+    <div class="dstripe" id="dStr"></div>
+    <div class="dbody" id="dBody"></div>
+  </div>
+  <div class="pf-summary" id="pfSummary"></div>
+  <button class="restart" onclick="restart()">Volver a empezar</button>
+</div>
+</div>
+<script>
+var Q=[
+{t:"Cuando algo me afecta, lo primero que busco en un espacio terapéutico es:",
+o:[["A","Tener claridad sobre qué estoy pensando o haciendo que lo perpetúa, y un plan concreto para cambiarlo."],
+   ["B","Poder hablar sin que me dirijan. Ver qué va saliendo y aprender a escucharme mejor."],
+   ["C","Que no me vean sólo a mí. Mis relaciones y mi familia también forman parte de lo que me pasa."],
+   ["D","Sentirme escuchado tal como soy, sin que nadie trate de arreglarme ni decirme qué hacer."],
+   ["E","Trabajar desde el cuerpo. Siento que algo en mí sigue en alerta aunque la situación ya haya pasado."]]},
+{t:"Entre sesión y sesión, ¿cómo me imagino participando?",
+o:[["A","Activo: haciendo registros, practicando lo que trabajamos, llevando seguimiento de lo que cambia."],
+   ["B","Más atento a cosas que antes no notaba: mis sueños, las palabras que se me van, lo que de repente se me olvida o se me escapa."],
+   ["C","Observando cómo me relaciono con las personas cercanas, tratando de ver la dinámica desde afuera."],
+   ["D","Siendo más honesto conmigo mismo en el día a día. Que lo que pase en sesión me ayude a escucharme más."],
+   ["E","Notando más lo que siente mi cuerpo: la tensión, la respiración, si estoy presente o desconectado."]]},
+{t:"¿Cuál de estas frases te suena más cercana a lo que te trajo aquí?",
+o:[["A","Sé lo que debería hacer, pero no lo hago. Quiero entender qué me lo impide y tener herramientas reales para cambiarlo."],
+   ["B","Repito las mismas cosas sin saber bien por qué. Quiero aprender a escucharme de verdad, a notar mis patrones."],
+   ["C","No quiero sólo cambiarme yo. Quiero que algo cambie en cómo funciona la relación con mi familia, mi pareja, mi entorno."],
+   ["D","Quiero vivir de manera más auténtica. No se trata de resolver un problema concreto sino de reconectar con quién soy."],
+   ["E","Ya lo entiendo con la cabeza. Pero algo en mi cuerpo sigue sin sentirse bien, aunque haya hablado mucho de eso."]]},
+{t:"Ante la posibilidad de explorar mis sueños u olvidos en terapia:",
+o:[["A","No es lo mío. Prefiero trabajar con cosas concretas que pueda observar y cambiar."],
+   ["B","Me genera mucha curiosidad. Creo que ahí hay pistas de cosas que no veo directamente."],
+   ["C","Poco interés. Lo que más me importa son los patrones en mis relaciones, no lo que pasa sólo dentro de mí."],
+   ["D","Podría ser interesante si surge de forma natural, pero me importa más conectar con lo que siento que interpretarlo."],
+   ["E","Para mí las señales están más en el cuerpo: la tensión crónica, la hipervigilancia, la desconexión."]]},
+{t:"¿Cómo me siento ante explorar algo en sesión sin saber a dónde lleva?",
+o:[["A","Me incomoda. Prefiero que haya un rumbo claro y una estructura."],
+   ["B","Es exactamente lo que busco. Me interesa lo que aparece cuando no hay agenda ni destino predefinido."],
+   ["C","Lo acepto si tiene que ver con mis relaciones y mi contexto real."],
+   ["D","Me siento bien. El silencio honesto y el espacio abierto me parecen más útiles que seguir un protocolo."],
+   ["E","En el silencio es cuando más registro lo que pasa en mi cuerpo. Ahí suelen aparecer cosas importantes."]]},
+{t:"¿Qué espero principalmente que cambie después de la terapia?",
+o:[["A","Una conducta o forma de pensar concreta que hoy me está causando problemas."],
+   ["B","Entenderme mejor. Saber leer lo que me pasa de una manera que antes no podía."],
+   ["C","Que algo cambie en cómo funcionan mis relaciones más importantes, no sólo en mí."],
+   ["D","Vivir de manera más auténtica. Que la terapia me acerque a quien realmente soy."],
+   ["E","Que el cuerpo deje de estar en alerta y pueda habitarse diferente."]]},
+{t:"¿Cuánto tiempo estoy dispuesto a dedicarle a la terapia?",
+o:[["A","Quiero algo acotado, con metas claras y resultados en un tiempo razonable."],
+   ["B","Estoy dispuesto a un proceso largo si me permite entenderme de verdad."],
+   ["C","Depende de lo que se necesite para cambiar la dinámica. Puede ser corto o largo."],
+   ["D","El tiempo no es lo central. Lo que importa es que el proceso sea genuino."],
+   ["E","Puede ser continuo. Lo que importa es que mi cuerpo pueda ir a su ritmo."]]},
+{t:"¿Con qué frecuencia preferirías tener sesiones?",
+o:[["A","Semanal. Prefiero un ritmo constante para que haya continuidad."],
+   ["B","Quincenal. Me parece suficiente para procesar lo que vamos viendo."],
+   ["C","Mensual. Me acomoda un proceso más espaciado."],
+   ["D","Sin preferencia. Lo definiría con el terapeuta según el proceso."]]},
+{t:"¿Cómo te sientes ante la idea de hacer ejercicios o prácticas entre sesiones?",
+o:[["A","Bien. El cambio real pasa en la vida cotidiana, no sólo en el consultorio."],
+   ["B","Sin problema, si tiene que ver con observar cómo me relaciono con otros."],
+   ["C","Podría funcionar, siempre que sea algo que yo elija hacer, no que me impongan."],
+   ["D","No lo veo necesario. Prefiero que el trabajo ocurra dentro de la sesión."],
+   ["E","Me gustaría si son prácticas corporales: respiración, movimiento, conciencia del cuerpo."]]},
+]
+
+var C={
+A:{name:"Terapias Cognitivo-Conductuales y Contextuales",short:"Cognitivo-Conductual / Contextual",col:"#2e7a8a",chip:"Cambio observable y acción",
+frase:"El cambio ocurre cuando entendemos qué hacemos y por qué, y decidimos actuar diferente.",
+ps:["Las terapias cognitivo-conductuales y sus variantes más recientes —ACT y DBT, entre otras— forman una familia con matices importantes, pero comparten una orientación central: el trabajo es <strong>observable, activo y orientado a resultados</strong>. No se trata sólo de pensar positivo. Es un análisis riguroso de cómo funcionan tus pensamientos, emociones y conductas en situaciones concretas.",
+"El paciente ideal en este enfoque <strong>no es pasivo</strong>. Trae lo que pasó entre sesiones, aplica lo trabajado, registra patrones. El terapeuta es más directivo que en otros enfoques: un especialista que guía con claridad hacia objetivos definidos.",
+"Las variantes más contemporáneas —especialmente ACT— añaden algo que profundiza el trabajo: no se trata sólo de cambiar pensamientos, sino de aprender a actuar desde los propios valores <em>aunque el malestar esté presente</em>. Eso requiere tolerar la incomodidad sin evitarla. Es más exigente de lo que parece, y más transformador."]},
+B:{name:"Psicoanálisis Contemporáneo",short:"Psicoanálisis Contemporáneo",col:"#6b3d8a",chip:"Escuchar lo que la psique ya sabe",
+frase:"Lo que no podemos decir directamente lo decimos de otras maneras. Aprender a escucharlo —en uno mismo y en la relación— es el trabajo.",
+ps:["El psicoanálisis contemporáneo trabaja desde varios frentes a la vez. Por un lado, mantiene la <strong>asociación libre</strong> como herramienta central: hablar sin filtro, sin agenda, dejando que aparezca lo que aparece. Sueños, lapsus, olvidos, repeticiones que no se eligen: todo ese material es lenguaje de la psique, señales de algo que todavía no puede decirse directamente.",
+"Por otro lado, a diferencia del psicoanálisis clásico, incorpora la <strong>intersubjetividad</strong> como dimensión central del proceso. El terapeuta no es un espejo neutro: también siente, percibe, reacciona. Y lo que ocurre entre los dos —lo que se construye en esa relación particular— forma parte del material de trabajo. Los patrones del paciente aparecen ahí, en vivo.",
+"Es un proceso que requiere curiosidad genuina por lo que uno mismo produce, y disposición a notar lo que pasa en la relación terapéutica. Para quien tiene eso, puede ofrecer una comprensión del funcionamiento propio que pocas corrientes pueden igualar."]},
+C:{name:"Terapia Sistémica Familiar",short:"Sistémico-Familiar",col:"#2e7a50",chip:"Cambiar la relación, no sólo a uno mismo",
+frase:"El síntoma tiene una función en el sistema. Entenderla es lo que lo libera.",
+ps:["La terapia sistémica parte de una idea que parece simple pero lo cambia todo: <strong>los síntomas no son fallas individuales, tienen una función dentro del sistema de relaciones</strong>. La familia, la pareja, el grupo forman un sistema con reglas implícitas que gobiernan más que la voluntad individual. El síntoma dice algo de ese sistema, y mientras no se entiende qué, tiende a persistir.",
+"Lo que suele llevar a alguien a este enfoque es algo específico: <strong>querer cambiar la relación, no sólo cambiarse a uno mismo</strong>. Sentir que el problema no está sólo dentro de uno sino en cómo funciona algo entre uno y otra persona. El terapeuta sistémico trabaja con ese espacio, aunque la persona venga sola a sesión.",
+"Algo que distingue a este enfoque es que <strong>no busca culpables</strong>. Busca entender qué función cumple el síntoma, cuándo dejó de ser necesario, y cómo el sistema puede reorganizarse sin él. Es un trabajo que libera porque quita el peso de ser 'el problema' y lo distribuye donde realmente está."]},
+D:{name:"Psicología Humanista Centrada en la Persona",short:"Humanista / Rogeriana",col:"#8a5c2e",chip:"Confianza radical en el potencial de crecimiento",
+frase:"La persona tiene dentro de sí todo lo necesario para crecer. La terapia crea las condiciones para que eso ocurra.",
+ps:["La terapia centrada en la persona, desarrollada por Carl Rogers, parte de una premisa que la hace irreducible a cualquier otro enfoque: <strong>una confianza radical en el potencial de crecimiento del paciente</strong>. El terapeuta no tiene un objetivo terapéutico que el paciente deba alcanzar. Confía en que, si se crean las condiciones correctas, la persona encontrará su propio camino.",
+"Esas condiciones son tres: aceptación incondicional del paciente tal como es, empatía genuina, y congruencia del terapeuta —que sea una persona presente y real, no un rol detrás de un escritorio—. Sin estas tres, no hay terapia rogeriana. Con ellas, muchas personas viven por primera vez la experiencia de ser completamente vistas sin que nadie intente cambiarlas.",
+"Este enfoque responde especialmente a quienes <strong>buscan autenticidad por encima de la resolución de síntomas</strong>. A quienes no tienen un problema puntual que resolver sino una necesidad más profunda: reconectar con quiénes realmente son y vivir desde ahí. Para esas personas, este espacio puede ser el primero en el que no tienen que actuar."]},
+E:{name:"Terapias Psicocorporales y Somáticas",short:"Psicocorporal / Somática",col:"#8a2e2e",chip:"El objetivo es que el cuerpo vuelva a sentirse seguro",
+frase:"Ante un trauma, el cuerpo queda atrapado en alerta. El trabajo no es recordar ni comprender, sino ayudar al sistema nervioso a encontrar seguridad de nuevo.",
+ps:["Ante una experiencia traumática, el sistema nervioso activa la respuesta de <em>fight or flight</em> para protegernos. El problema ocurre cuando esa respuesta <strong>no puede completarse</strong>: el peligro pasó, pero el cuerpo no recibió la señal de que ya es seguro. Queda atrapado en un estado de alerta crónica, como si la amenaza siguiera presente. Eso tiene consecuencias muy concretas: se apagan gradualmente la <strong>propiocepción</strong> —la capacidad de sentir dónde está el propio cuerpo en el espacio— y la <strong>interocepción</strong> —la capacidad de registrar lo que ocurre adentro—. El cuerpo deja de ser un lugar habitable.",
+"Muchas personas que llegan a este enfoque <strong>ya han hecho terapia de palabra</strong> y han avanzado mucho: entienden lo que les pasó, pueden hablarlo, han trabajado sus patrones. Pero algo no termina de sentirse bien. El malestar persiste de formas que no responden al análisis ni a la comprensión. Eso no es un fracaso de los procesos anteriores, es la señal de que queda un trabajo que la palabra sola no puede hacer.",
+"El objetivo de las terapias somáticas no es revivir el trauma ni analizarlo. Es <strong>ayudar al sistema nervioso a completar lo que quedó interrumpido</strong> y recuperar la sensación de seguridad en el propio cuerpo. Cuando eso ocurre, la propiocepción e interocepción se reactivan gradualmente. La persona empieza a habitar su cuerpo de nuevo. No como un logro intelectual, sino como algo que simplemente se siente diferente."]}
+};
+
+var ans=new Array(Q.length).fill(null),cur=0;
+
+function render(){
+  var q=Q[cur],gl=["a","b","c","d","e"],ks=["A","B","C","D","E"];
+  document.getElementById("qc").innerHTML="<div class=\"card-q\"><p class=\"q-no\">Pregunta "+(cur+1)+" de "+Q.length+"</p><p class=\"q-stem\">"+q.t+"</p></div>"+q.o.map(function(o,i){return "<button class=\"opt "+(ans[cur]===ks[i]?"sel":"")+"\" onclick=\"pick('"+ks[i]+"',this)\"><span class=\"gl\">"+gl[i]+"</span><span class=\"ot\">"+o[1]+"</span></button>";}).join("");
+  document.getElementById("pb").style.width=(cur/Q.length*100)+"%";
+  document.getElementById("pct").textContent=(cur+1)+" / "+Q.length;
+  document.getElementById("bPrev").disabled=cur===0;
+  document.getElementById("bNext").disabled=ans[cur]===null;
+  document.getElementById("bNext").textContent=cur===Q.length-1?"Ver resultado →":"Siguiente →";
+}
+
+function pick(k,btn){
+  ans[cur]=k;
+  document.querySelectorAll(".opt").forEach(function(b){b.classList.remove("sel");});
+  btn.classList.add("sel");
+  document.getElementById("bNext").disabled=false;
+}
+
+function go(d){
+  if(d===1&&cur===Q.length-1&&ans[cur]!==null){goToProfile();return;}
+  cur=Math.max(0,Math.min(Q.length-1,cur+d));
+  render();
+}
+
+// ── Profile ──────────────────────────────────────────────────────────────────
+var PF={tGenero:null,tEdad:null,modalidad:null,zona:null};
+
+function setPF(btn,key,val){
+  PF[key]=val;
+  btn.closest(".pf-opts").querySelectorAll(".pf-opt").forEach(function(b){b.classList.remove("on");});
+  btn.classList.add("on");
+}
+
+function toggleGeo(show){
+  document.getElementById("geoWrap").classList.toggle("show",show);
+  if(!show){
+    PF.zona=null;
+    var gz=document.getElementById('geoZona');
+    if(gz)gz.value="";
+    var cw=document.getElementById('coloniaWrap');
+    if(cw)cw.style.display='none';
+    var gc=document.getElementById('geoColonia');
+    if(gc)gc.innerHTML='';
+  }
+}
+
+function goToProfile(){
+  document.getElementById("quiz").style.display="none";
+  var pf=document.getElementById("pfScreen");
+  pf.style.display="block";
+  setTimeout(function(){pf.classList.add("on");},10);
+}
+
+function buildSummary(){
+  var parts=[];
+  if(PF.tGenero&&PF.tGenero!=="Sin preferencia"){
+    parts.push(PF.tGenero==="Mujer"?"una terapeuta mujer":"un terapeuta hombre");
+  } else {
+    parts.push("un terapeuta");
+  }
+  if(PF.tEdad&&PF.tEdad!=="Sin preferencia"){
+    parts[0]+=" de "+PF.tEdad+" años";
+  }
+  var loc="";
+  if(PF.modalidad==="En línea"){
+    loc=", en línea";
+  } else if(PF.modalidad){
+    loc=", de forma presencial";
+    var zonaStr=PF.zona||"";
+    var coloniaEl=document.getElementById('geoColonia');
+    var coloniaVal=coloniaEl?coloniaEl.value:"";
+    if(zonaStr!=="") loc+=" en "+(coloniaVal?coloniaVal+", "+zonaStr:zonaStr);
+  }
+  return "Buscas "+parts[0]+loc+".";
+}
+
+function showResults(){
+  var pf=document.getElementById("pfScreen");
+  pf.classList.remove("on");
+  pf.style.display="none";
+
+  var counts={A:0,B:0,C:0,D:0,E:0};
+  // Only first 7 questions score the corriente; last 2 are preference/profile questions
+  ans.slice(0,7).forEach(function(a){if(a)counts[a]++;});
+  var sorted=Object.entries(counts).sort(function(a,b){return b[1]-a[1];});
+  var winner=sorted[0][0];
+  var c=C[winner],total=Q.length;
+
+  document.getElementById("res").classList.add("on");
+  document.getElementById("rTitle").innerHTML="Tu corriente es<br><span style=\"font-style:italic;color:"+c.col+"\">"+c.name+"</span>";
+  var b=document.getElementById("rBadge");
+  b.textContent=c.chip;
+  b.style.background=c.col+"15";
+  b.style.color=c.col;
+  b.style.border="1px solid "+c.col+"38";
+
+  document.getElementById("bars").innerHTML=Object.entries(C).map(function(e){
+    var k=e[0],cor=e[1],pct=Math.round(counts[k]/total*100);
+    return "<div class=\"br\"><div class=\"br-hd\"><span class=\"br-nm\" style=\"color:"+cor.col+"\">"+cor.short+"</span><span class=\"br-st\">"+counts[k]+" resp. · "+pct+"%</span></div><div class=\"br-tr\"><div class=\"br-fl\" style=\"background:"+cor.col+"\" data-p=\""+pct+"\"></div></div></div>";
+  }).join("");
+
+  document.getElementById("dStr").style.background=c.col;
+  document.getElementById("dBody").innerHTML="<p class=\"plabel\">¿Qué significa esto?</p><h2 style=\"color:"+c.col+"\">"+c.name+"</h2><div class=\"pq\">"+c.frase+"</div>"+c.ps.map(function(p){return "<p>"+p+"</p>";}).join("");
+
+  var summaryEl=document.getElementById("pfSummary");
+  if(PF.tGenero||PF.tEdad||PF.modalidad){
+    summaryEl.innerHTML="<p class=\"pf-summary-note\"><strong>Tu búsqueda:</strong> "+buildSummary()+"</p>";
+  } else {
+    summaryEl.innerHTML="";
+  }
+
+  setTimeout(function(){
+    document.querySelectorAll(".br-fl").forEach(function(el){el.style.width=el.dataset.p+"%";});
+  },100);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function restart(){
+  ans=new Array(Q.length).fill(null);cur=0;
+  PF={tGenero:null,tEdad:null,modalidad:null,zona:null};
+  document.getElementById("res").classList.remove("on");
+  document.getElementById("pfSummary").innerHTML="";
+  var pf=document.getElementById("pfScreen");
+  pf.classList.remove("on");pf.style.display="none";
+  document.querySelectorAll(".pf-opt").forEach(function(b){b.classList.remove("on");});
+  document.getElementById("geoWrap").classList.remove("show");
+  var gz=document.getElementById('geoZona');if(gz)gz.value="";
+  var cw=document.getElementById('coloniaWrap');if(cw)cw.style.display='none';
+  var gc=document.getElementById('geoColonia');if(gc)gc.innerHTML='';
+  document.getElementById("quiz").style.display="block";
+  render();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+
+var coloniasPorZona={
+  "Centro":["Roma Norte","Roma Sur","Condesa","Juárez","Doctores","Centro Histórico","Cuauhtémoc","Tepito","Santa María la Ribera","San Rafael"],
+  "Sur":["Coyoacán","Del Valle","Narvarte","Benito Juárez","Pedregal","Tlalpan","Xochimilco","Coapa","Jardines del Pedregal","Insurgentes Sur"],
+  "Poniente":["Lomas de Chapultepec","Santa Fe","Polanco","Huixquilucan","Cuajimalpa","Álvaro Obregón","San Ángel","Mixcoac","Las Águilas","Pedregal de San Ángel"],
+  "Norte":["Lindavista","Gustavo A. Madero","Azcapotzalco","Tepeyac","Villa de Guadalupe","Cuautepec","Vallejo","Industrial"],
+  "Oriente":["Iztapalapa","Iztacalco","Venustiano Carranza","Aeropuerto","Peñón de los Baños","Pantitlán","La Merced"]
+};
+
+function onZonaChange(zona){
+  PF.zona=zona;
+  PF.colonia=null;
+  var wrap=document.getElementById('coloniaWrap');
+  var sel=document.getElementById('geoColonia');
+  if(coloniasPorZona[zona]){
+    sel.innerHTML='<option value="">Selecciona colonia o alcaldía</option>'+
+      coloniasPorZona[zona].map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('');
+    wrap.style.display='block';
+  } else {
+    wrap.style.display='none';
+    sel.innerHTML='';
+  }
+}
+
+render();
+</script>
+</body>
+</html>
