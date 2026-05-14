@@ -6,6 +6,7 @@ import AuthModal from './components/AuthModal'
 import Subscribe from './components/therapist/Subscribe'
 import ProfileForm from './components/therapist/ProfileForm'
 import TherapistDashboard from './components/therapist/TherapistDashboard'
+import PatientProfile from './components/patient/PatientProfile'
 import Quiz from './components/patient/Quiz'
 import Preferences from './components/patient/Preferences'
 import Results from './components/patient/Results'
@@ -13,7 +14,7 @@ import TherapistDetail from './components/patient/TherapistDetail'
 
 // Screens:
 // landing | auth | t-subscribe | t-profile-form | t-dashboard
-// p-quiz  | p-preferences | p-results | p-detail
+// p-profile | p-quiz | p-preferences | p-results | p-detail
 
 export default function App() {
   const [screen, setScreen] = useState('landing')
@@ -21,10 +22,12 @@ export default function App() {
   const [currentUser, setCurrentUser] = useLocalStorage('dt_current_user', null)
   const [users, setUsers] = useLocalStorage('dt_users', [])
   const [therapistProfiles, setTherapistProfiles] = useLocalStorage('dt_therapist_profiles', [])
+  const [patientProfiles, setPatientProfiles] = useLocalStorage('dt_patient_profiles', [])
 
   const [quizResult, setQuizResult] = useState(null)
   const [patientPrefs, setPatientPrefs] = useState(null)
   const [selectedTherapist, setSelectedTherapist] = useState(null)
+  const [currentPatientId, setCurrentPatientId] = useState(null)
 
   // ── Helpers ──────────────────────────────────────────────────────────────
   function getProfile(userId) {
@@ -55,8 +58,10 @@ export default function App() {
   // ── Role selection from landing ──────────────────────────────────────────
   function handleRoleSelect(role) {
     if (role === 'patient') {
-      // Patient: go straight to quiz, no login required
-      setScreen('p-quiz')
+      // Patient: go to profile creation first
+      const patientId = 'patient_' + Date.now()
+      setCurrentPatientId(patientId)
+      setScreen('p-profile')
     } else {
       // Therapist: need to auth first
       setAuthRole('therapist')
@@ -97,6 +102,16 @@ export default function App() {
     setScreen('landing')
   }
 
+  function handlePatientProfileComplete(profileData) {
+    const profile = {
+      id: currentPatientId,
+      ...profileData,
+      createdAt: new Date().toISOString()
+    }
+    setPatientProfiles([...patientProfiles, profile])
+    setScreen('p-quiz')
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
   if (screen === 'landing') {
     return (
@@ -119,6 +134,15 @@ export default function App() {
           onSuccess={handleAuthSuccess}
         />
       </>
+    )
+  }
+
+  if (screen === 'p-profile') {
+    return (
+      <PatientProfile
+        onComplete={handlePatientProfileComplete}
+        onBack={() => setScreen('landing')}
+      />
     )
   }
 
